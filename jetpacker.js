@@ -1,4 +1,5 @@
 import {defs, tiny} from './examples/common.js';
+import {Shape_From_File} from './examples/obj-file-demo.js';
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
@@ -11,14 +12,21 @@ export class Jetpacker extends Scene {
 
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
-            player : new defs.Subdivision_Sphere(4)
+            player : new defs.Subdivision_Sphere(4),
+            cylinder : new defs.Rounded_Capped_Cylinder(100, 100),
+            cylinder2 : new defs.Rounded_Capped_Cylinder(100, 100)
         };
 
         // *** Materials
         this.materials = {
             player_material : new Material(new defs.Phong_Shader(),
                 {ambient: .6, diffusivity: 1, color: hex_color("#80FFFF")}),
+            laser_material : new Material(new defs.Phong_Shader(),
+                {ambient: 0, color: hex_color("#FFA500")}),
+            
         };
+        this.accelerate = false;
+
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 1, 2), vec3(0, 0, 0), vec3(0, 1, 0));
 
@@ -82,5 +90,11 @@ export class Jetpacker extends Scene {
         const translation_change = Mat4.translation(0, this.player_z_coord, 0);
         this.player_matrix = translation_change.times(Mat4.scale(3,3,3));
         this.shapes.player.draw(context, program_state, this.player_matrix, this.materials.player_material);
+    
+        let model_transform = Mat4.identity().times(Mat4.rotation(60, 1, 0, 0).times(Mat4.scale(2, 2, 20).times(Mat4.translation(50, 0, 0))));
+        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
+
+        model_transform = Mat4.identity().times(Mat4.rotation(30, 1, 0, 0).times(Mat4.scale(2, 2, 20).times(Mat4.translation(25, 0, 0))));
+        this.shapes.cylinder2.draw(context, program_state, model_transform, this.materials.laser_material);
     }
 }
