@@ -22,7 +22,7 @@ export class Jetpacker extends Scene {
             player_material : new Material(new defs.Phong_Shader(),
                 {ambient: .6, diffusivity: 1, color: hex_color("#80FFFF")}),
             laser_material : new Material(new defs.Phong_Shader(),
-                {ambient: 0, color: hex_color("#FFA500")}),
+                {ambient: 0.6, color: hex_color("#FFA500")}),
             
         };
         this.accelerate = false;
@@ -34,10 +34,10 @@ export class Jetpacker extends Scene {
         this.player_z_coord = 0.0;
         this.w_pressed = false;
         this.player_velocity = 0.0;
-        this.jetpack_acceleration = 15.0;
+        this.jetpack_acceleration = 20.0;
         this.gravity_acceleration = -9.8;
-        this.scene_max_z_coord = 50;
-        this.scene_min_z_coord = 0;
+        this.scene_max_z_coord = 40;
+        this.scene_min_z_coord = -10;
     }
 
     make_control_panel() {
@@ -86,15 +86,35 @@ export class Jetpacker extends Scene {
             this.player_z_coord = this.scene_max_z_coord
             this.player_velocity = 0;
         }
+        let t = program_state.animation_time / 150;
+
 
         const translation_change = Mat4.translation(0, this.player_z_coord, 0);
         this.player_matrix = translation_change.times(Mat4.scale(3,3,3));
         this.shapes.player.draw(context, program_state, this.player_matrix, this.materials.player_material);
     
         let model_transform = Mat4.identity().times(Mat4.rotation(60, 1, 0, 0).times(Mat4.scale(2, 2, 20).times(Mat4.translation(50, 0, 0))));
+        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
         this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
 
         model_transform = Mat4.identity().times(Mat4.rotation(30, 1, 0, 0).times(Mat4.scale(2, 2, 20).times(Mat4.translation(25, 0, 0))));
+        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
+
+
+
         this.shapes.cylinder2.draw(context, program_state, model_transform, this.materials.laser_material);
+        model_transform = Mat4.translation(150, 10, 0).times(Mat4.rotation(20, 1, 0, 0)).times(Mat4.scale(2,2, 20));
+        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
+
+        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
+
+        model_transform = Mat4.translation(200, 20, 0).times(Mat4.rotation(40, 1, 0, 0)).times(Mat4.scale(2,2, 20));
+        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
+        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
+
+        model_transform = Mat4.translation(250, 20, 0).times(Mat4.rotation(60, 1, 0, 0)).times(Mat4.scale(2,2, 20));
+        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
+        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
+
     }
 }
