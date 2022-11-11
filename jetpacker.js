@@ -17,14 +17,25 @@ export class Jetpacker extends Scene {
         // *** Materials
         this.materials = {
             player_material : new Material(new defs.Phong_Shader(),
-                {ambient: 0, diffusivity: 0.4, color: hex_color("#80FFFF")}),
+                {ambient: .6, diffusivity: 1, color: hex_color("#80FFFF")}),
         };
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 1, 2), vec3(0, 0, 0), vec3(0, 1, 0));
+
+        this.player_matrix = Mat4.scale(3,3,3);
+        this.player_z_coord = 0.0;
+        this.w_pressed = false;
+        this.player_velocity = 0.0;
+        this.jetpack_acceleration = 15.0;
+        this.gravity_acceleration = -9.8;
+        this.scene_max_z_coord = 50;
+        this.scene_min_z_coord = 0;
     }
 
     make_control_panel() {
-        // this.key_triggered_button()
+        this.key_triggered_button("Toggle jetpack", ["h"], () => {
+            this.w_pressed = ! this.w_pressed;
+        })
     }
 
     display(context, program_state) {
@@ -35,15 +46,41 @@ export class Jetpacker extends Scene {
         if (!context.scratchpad.controls) {
             this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
-            program_state.set_camera(Mat4.translation(-24.30, -6.01, -47.99));
+            program_state.set_camera(Mat4.translation(-51.63, -18.34, -87.29));
         }
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, 1, 100);
 
         // *** Lights: *** Values of vector or point lights.
-        const light_position = vec4(0, 5, 5, 1);
-        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+        const light_position1 = vec4(0, 100, 10, 1);
+        const light_position2 = vec4(0, -100, -10, 1);
+        program_state.lights = [new Light(light_position1, color(1, 1, 1, 1), 1000), new Light(light_position2, color(1, 1, 1, 1), 1000)];
         // program_state.set_camera(this.initial_camera_location);
-        this.shapes.player.draw(context, program_state, Mat4.scale(3,3,3), this.materials.player_material);
+
+
+        const time_between_frames = 0.04;
+        let acceleration;
+
+        if (this.w_pressed) {
+            acceleration = this.jetpack_acceleration + this.gravity_acceleration;
+        } else {
+            acceleration = this.gravity_acceleration;
+        }
+        let delta_z = this.player_velocity * time_between_frames + 0.5 * acceleration * (time_between_frames ** 2);
+        this.player_velocity = this.player_velocity + acceleration * time_between_frames;
+        this.player_z_coord += delta_z;
+        console.log(this.player_z_coord);
+        if (this.player_z_coord < this.scene_min_z_coord){
+            this.player_z_coord = this.scene_min_z_coord;
+            this.player_velocity = 0;
+        }
+        if (this.player_z_coord > this.scene_max_z_coord) {
+            this.player_z_coord = this.scene_max_z_coord
+            this.player_velocity = 0;
+        }
+
+        const translation_change = Mat4.translation(0, this.player_z_coord, 0);
+        this.player_matrix = translation_change.times(Mat4.scale(3,3,3));
+        this.shapes.player.draw(context, program_state, this.player_matrix, this.materials.player_material);
     }
 }
