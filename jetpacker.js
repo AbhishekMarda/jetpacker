@@ -115,6 +115,22 @@ export class Jetpacker extends Scene {
         model_transform = Mat4.translation(250, 20, 0).times(Mat4.rotation(60, 1, 0, 0)).times(Mat4.scale(2,2, 20));
         model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
         this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
+        model_transform = Mat4.translation(300, 20, 0).times(Mat4.rotation(70, 1, 0, 0)).times(Mat4.scale(2,2, 20));
+        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
+        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
+        model_transform = Mat4.translation(350, 20, 0).times(Mat4.rotation(80, 1, 0, 0)).times(Mat4.scale(2,2, 20));
+        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
+        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
 
+
+        model_transform = Mat4.translation(370, 20, 0).times(Mat4.rotation(20, 1, 0, 0)).times(Mat4.scale(2,2, 20));
+        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
+        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
+        model_transform = Mat4.translation(400, 20, 0).times(Mat4.rotation(30, 1, 0, 0)).times(Mat4.scale(2,2, 20));
+        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
+        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
+        model_transform = Mat4.translation(420, 20, 0).times(Mat4.rotation(15, 1, 0, 0)).times(Mat4.scale(2,2, 20));
+        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
+        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
     }
 }
