@@ -8,7 +8,7 @@ function getBilinearInterpolated2DPoint(start, end, factor){
         throw Error("factor out of bounds");
     }
 
-    return vec3(start.x * (1 - factor) + end.x * factor, start.y * (1 - factor) + end.x * factor);
+    return vec3(start.x * (1 - factor) + end.x * factor, start.y * (1 - factor) + end.y * factor);
 }
 
 
