@@ -46,6 +46,19 @@ export class Jetpacker extends Scene {
         })
     }
 
+    draw_cylinder(transx,transy,transz,scalex,scaley,scalez,rottheta,context,program_state,t) {
+        let model_transform = Mat4.identity().times(Mat4.rotation(rottheta, 1, 0, 0).times(Mat4.scale(scalex, scaley, scalez).times(Mat4.translation(transx, transy, transz))));
+        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
+        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
+
+        let endpoint = model_transform.times(vec4(0,0,0.5,1));
+        let length = scaley;  // only valid if scaley == scalez, which it is so far
+
+        // Delete me: Just a test to verify that the endpoint is actually at the endpoint:
+        // let endpoint_matrix = Mat4.identity().times(Mat4.translation(endpoint[0],endpoint[1],endpoint[2]).times(Mat4.scale(5,5,5)));
+        // this.shapes.player.draw(context, program_state, endpoint_matrix, this.materials.player_material);
+    }
+
     display(context, program_state) {
         // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
@@ -92,45 +105,16 @@ export class Jetpacker extends Scene {
         const translation_change = Mat4.translation(0, this.player_z_coord, 0);
         this.player_matrix = translation_change.times(Mat4.scale(3,3,3));
         this.shapes.player.draw(context, program_state, this.player_matrix, this.materials.player_material);
-    
-        let model_transform = Mat4.identity().times(Mat4.rotation(60, 1, 0, 0).times(Mat4.scale(2, 2, 20).times(Mat4.translation(50, 0, 0))));
-        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
-        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
 
-        model_transform = Mat4.identity().times(Mat4.rotation(30, 1, 0, 0).times(Mat4.scale(2, 2, 20).times(Mat4.translation(25, 0, 0))));
-        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
-
-
-
-        this.shapes.cylinder2.draw(context, program_state, model_transform, this.materials.laser_material);
-        model_transform = Mat4.translation(150, 10, 0).times(Mat4.rotation(20, 1, 0, 0)).times(Mat4.scale(2,2, 20));
-        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
-
-        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
-
-        model_transform = Mat4.translation(200, 20, 0).times(Mat4.rotation(40, 1, 0, 0)).times(Mat4.scale(2,2, 20));
-        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
-        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
-
-        model_transform = Mat4.translation(250, 20, 0).times(Mat4.rotation(60, 1, 0, 0)).times(Mat4.scale(2,2, 20));
-        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
-        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
-        model_transform = Mat4.translation(300, 20, 0).times(Mat4.rotation(70, 1, 0, 0)).times(Mat4.scale(2,2, 20));
-        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
-        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
-        model_transform = Mat4.translation(350, 20, 0).times(Mat4.rotation(80, 1, 0, 0)).times(Mat4.scale(2,2, 20));
-        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
-        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
-
-
-        model_transform = Mat4.translation(370, 20, 0).times(Mat4.rotation(20, 1, 0, 0)).times(Mat4.scale(2,2, 20));
-        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
-        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
-        model_transform = Mat4.translation(400, 20, 0).times(Mat4.rotation(30, 1, 0, 0)).times(Mat4.scale(2,2, 20));
-        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
-        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
-        model_transform = Mat4.translation(420, 20, 0).times(Mat4.rotation(15, 1, 0, 0)).times(Mat4.scale(2,2, 20));
-        model_transform = Mat4.translation(-t, 0, 0).times(model_transform);
-        this.shapes.cylinder.draw(context, program_state, model_transform, this.materials.laser_material);
+        this.draw_cylinder(50,0,0,2,2,20,60,context,program_state,t);
+        this.draw_cylinder(25,0,0,2,2,20,30,context,program_state,t);
+        this.draw_cylinder(150,10,0,2,2,20,20,context,program_state,t);
+        this.draw_cylinder(200,20,0,2,2,20,40,context,program_state,t);
+        this.draw_cylinder(250,20,0,2,2,20,60,context,program_state,t);
+        this.draw_cylinder(300,20,0,2,2,20,70,context,program_state,t);
+        this.draw_cylinder(350,20,0,2,2,20,80,context,program_state,t);
+        this.draw_cylinder(370,20,0,2,2,20,20,context,program_state,t);
+        this.draw_cylinder(400,20,0,2,2,20,30,context,program_state,t);
+        this.draw_cylinder(420,20,0,2,2,20,15,context,program_state,t);
     }
 }
