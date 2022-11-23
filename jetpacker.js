@@ -1,6 +1,7 @@
 import {defs, tiny} from './examples/common.js';
 import {Shape_From_File} from './examples/obj-file-demo.js';
 // import {detectLaserCollision} from "./collision";
+import {detectLaserCollision} from "./collision.js";
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
 } = tiny;
@@ -26,7 +27,6 @@ class Laser {
 
         this.rottheta = rottheta;
 
-        this.x_position = transx;
     }
 
     draw(context, program_state, time_between_frames) {
@@ -44,15 +44,16 @@ class Laser {
         model_transform = Mat4.rotation(this.rottheta, 0, 0, 1).times(model_transform);
 
         // then move the endpoint to where we want
-        model_transform = Mat4.translation(this.x_position, this.transy, this.transz).times(model_transform);
+        model_transform = Mat4.translation(this.transx, this.transy, this.transz).times(model_transform);
 
         Laser.shapes.cylinder.draw(context, program_state, model_transform, Laser.materials.laser_material);
 
-        this.x_position -= time_between_frames;
+        const speed_multiplier = 6; // increase the speed of the objects
+        this.transx -= speed_multiplier * time_between_frames;
     }
 
     getXPos() {
-        return this.x_position;
+        return this.transx;
     }
 }
 
@@ -93,14 +94,18 @@ export class Jetpacker extends Scene {
         this.game_over = false;
         this.time_between_frames = 0.04;
         this.time_since_laser_drawn = 0;
-        this.max_time_between_laser = this.time_between_frames * 10000; // there must be a laser in these amount of frames
+        this.max_time_between_laser = this.time_between_frames * 20000; // there must be a laser in these amount of frames
         this.laser_arr = []; // queue of laser objects
-
+        this.game_paused = false;
     }
 
     make_control_panel() {
         this.key_triggered_button("Toggle jetpack", ["h"], () => {
             this.w_pressed = ! this.w_pressed;
+        })
+
+        this.key_triggered_button("Pause game", ["p"], () => {
+            this.game_paused = !this.game_paused;
         })
     }
 
@@ -140,11 +145,23 @@ export class Jetpacker extends Scene {
         this.shapes.player.draw(context, program_state, this.player_matrix, this.materials.player_material);
     }
 
+    collisionDetected() {
+        for (let laser of this.laser_arr) {
+            const player_z = 0;
+            const player_x = 0;
+            let collision = detectLaserCollision(vec3(player_x, this.player_y_coord, player_z), 3, vec3(laser.transx, laser.transy, laser.transz), laser.rottheta, laser.scaley);
+            if (collision) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     generateLaser() {
 
         let draw_new_laser = (this.time_since_laser_drawn / this.max_time_between_laser) > Math.random();
 
-        const entities_start_x = 100; // all entities will be generated at this frame
+        const entities_start_x = 150; // all entities will be generated at this frame
         const entity_z = 0; // game is 2D
 
         if (draw_new_laser) {
@@ -152,7 +169,7 @@ export class Jetpacker extends Scene {
             const entity_y = Math.random() * (this.scene_max_y_coord - this.scene_min_y_coord) + this.scene_min_y_coord;
             const scale_x = 1;
             const scale_z = 1;
-            const scale_y = Math.random() * (10-5) * 5; // scale between 5 and 20 length
+            const scale_y = Math.random() * (40-5) +  5; // scale between 5 and 20 length
             const rottheta = Math.random() * Math.PI / 4; // max rotation should be 90 deg
 
             let laser = new Laser(entities_start_x, entity_y, entity_z, scale_x, scale_y, scale_z, rottheta);
@@ -167,7 +184,7 @@ export class Jetpacker extends Scene {
 
     updateLasers() {
         while (this.laser_arr.length > 0) {
-            if (this.laser_arr[0].getXPos() <= 0) {
+            if (this.laser_arr[0].getXPos() <= -40) {       // let the laser go a little off-screen
                 this.laser_arr.splice(0, 1);
             } else {
                 break;
@@ -177,7 +194,7 @@ export class Jetpacker extends Scene {
 
     drawLasers(context, program_state, t) {
         for(let laser of this.laser_arr) {
-            laser.draw(context, program_state, this.time_between_frames);
+            laser.draw(context, program_state, t);
         }
     }
 
@@ -195,13 +212,19 @@ export class Jetpacker extends Scene {
             Math.PI / 4, context.width / context.height, 1, 100);
 
         this.setLights(program_state);
-        this.updatePlayerPosition();
         this.drawPlayer(context, program_state);
 
         let t = program_state.animation_time / 150;
+        if (!this.game_paused) {
+            this.generateLaser(); // see if a laser must be added
+            this.updatePlayerPosition();
+            this.updateLasers();
+            this.drawLasers(context, program_state, this.time_between_frames);
 
-        this.generateLaser(); // see if a laser must be added
-        this.updateLasers();
-        this.drawLasers(context, program_state, t);
+        } else {
+            this.drawLasers(context, program_state, 0);
+        }
+
+
     }
 }

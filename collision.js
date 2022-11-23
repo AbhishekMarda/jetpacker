@@ -1,4 +1,4 @@
-import {tiny} from './tiny-graphics';
+import {tiny} from './tiny-graphics.js';
 const {
     vec3
 } = tiny;
