@@ -57,6 +57,38 @@ class Laser {
     }
 }
 
+class Coin {
+    static shapes = {
+        coin : new defs.Rounded_Capped_Cylinder(100, 100),
+    }
+
+    static materials = {
+        coin_material : new Material(new defs.Phong_Shader(),
+            {ambient: .9, diffusivity: 1, color: hex_color("#dcb82b")}),
+    }
+
+    constructor(transx, transy) {
+        this.transx = transx;
+        this.transy = transy;
+
+    }
+
+    draw(context, program_state, t) {
+
+
+        // first flatten along x
+        let model_transform = Mat4.scale(1, 1, 0.1);
+
+        // rotate to give spinning effect
+        model_transform = Mat4.rotation(t, 0, 1, 0).times(model_transform);
+
+        // translate to required position
+        model_transform = Mat4.translation(this.transx, this.transy, 0).times(model_transform);
+
+        Coin.shapes.coin.draw(context, program_state, model_transform, Coin.materials.coin_material);
+    }
+}
+
 export class Jetpacker extends Scene {
     constructor() {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
@@ -102,6 +134,9 @@ export class Jetpacker extends Scene {
         this.control_laser = new Laser(0, 0, 0, 1, 10, 1, 0);
         // this.laser_arr.push(this.control_laser);
     }
+
+
+
 
     make_control_panel() {
         this.key_triggered_button("Toggle jetpack", ["h"], () => {
@@ -149,7 +184,7 @@ export class Jetpacker extends Scene {
         this.shapes.player.draw(context, program_state, this.player_matrix, this.materials.player_material);
     }
 
-    collisionDetected(context, program_state) {
+    collisionDetected() {
         for (let laser of this.laser_arr) {
             const player_z = 0;
             const player_x = 0;
@@ -222,7 +257,11 @@ export class Jetpacker extends Scene {
 
         // this.control_laser.draw(context, program_state, 0);
 
+
         let t = program_state.animation_time / 150;
+
+        let coin = new Coin(5, 5);
+        coin.draw(context, program_state, t);
         if (!this.collisionDetected(context, program_state) && !this.game_paused) {
             this.generateLaser(); // see if a laser must be added
             this.updatePlayerPosition();
