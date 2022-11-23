@@ -97,6 +97,10 @@ export class Jetpacker extends Scene {
         this.max_time_between_laser = this.time_between_frames * 20000; // there must be a laser in these amount of frames
         this.laser_arr = []; // queue of laser objects
         this.game_paused = false;
+
+        // delete
+        this.control_laser = new Laser(0, 0, 0, 1, 10, 1, 0);
+        // this.laser_arr.push(this.control_laser);
     }
 
     make_control_panel() {
@@ -128,7 +132,7 @@ export class Jetpacker extends Scene {
         let delta_y = this.player_velocity * this.time_between_frames + 0.5 * acceleration * (this.time_between_frames ** 2);
         this.player_velocity = this.player_velocity + acceleration * this.time_between_frames;
         this.player_y_coord += delta_y;
-        console.log(this.player_y_coord);
+
         if (this.player_y_coord < this.scene_min_y_coord){
             this.player_y_coord = this.scene_min_y_coord;
             this.player_velocity = 0;
@@ -145,10 +149,11 @@ export class Jetpacker extends Scene {
         this.shapes.player.draw(context, program_state, this.player_matrix, this.materials.player_material);
     }
 
-    collisionDetected() {
+    collisionDetected(context, program_state) {
         for (let laser of this.laser_arr) {
             const player_z = 0;
             const player_x = 0;
+
             let collision = detectLaserCollision(vec3(player_x, this.player_y_coord, player_z), 3, vec3(laser.transx, laser.transy, laser.transz), laser.rottheta, laser.scaley);
             if (collision) {
                 return true;
@@ -169,8 +174,8 @@ export class Jetpacker extends Scene {
             const entity_y = Math.random() * (this.scene_max_y_coord - this.scene_min_y_coord) + this.scene_min_y_coord;
             const scale_x = 1;
             const scale_z = 1;
-            const scale_y = Math.random() * (40-5) +  5; // scale between 5 and 20 length
-            const rottheta = Math.random() * Math.PI / 4; // max rotation should be 90 deg
+            const scale_y = Math.random() * (30-10) +  10; // scale between 5 and 20 length
+            const rottheta = Math.random() * Math.PI / 2; // max rotation should be 90 deg
 
             let laser = new Laser(entities_start_x, entity_y, entity_z, scale_x, scale_y, scale_z, rottheta);
 
@@ -214,8 +219,11 @@ export class Jetpacker extends Scene {
         this.setLights(program_state);
         this.drawPlayer(context, program_state);
 
+
+        // this.control_laser.draw(context, program_state, 0);
+
         let t = program_state.animation_time / 150;
-        if (!this.game_paused) {
+        if (!this.collisionDetected(context, program_state) && !this.game_paused) {
             this.generateLaser(); // see if a laser must be added
             this.updatePlayerPosition();
             this.updateLasers();
@@ -224,7 +232,6 @@ export class Jetpacker extends Scene {
         } else {
             this.drawLasers(context, program_state, 0);
         }
-
 
     }
 }
