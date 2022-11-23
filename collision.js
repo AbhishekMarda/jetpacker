@@ -20,7 +20,7 @@ function circleIntersect(center1, radius1, center2, radius2) {
     return distance < radius1 + radius2;
 }
 
-export function detectCollision(player_position, player_radius, laser_start_point, angle, length) {
+export function detectLaserCollision(player_position, player_radius, laser_start_point, angle, length) {
     // find the end point
     // the z coordinate is useless for us
 
