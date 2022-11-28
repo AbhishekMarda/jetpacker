@@ -1,5 +1,6 @@
 import {defs, tiny} from './examples/common.js';
 import {Jetpacker} from "./jetpacker.js";
+import { Obj_File_Demo } from './examples/obj-file-demo.js';
 
 // Pull these names into this module's scope for convenience:
 const {
@@ -18,7 +19,8 @@ const {
 const Minimal_Webgl_Demo = defs.Minimal_Webgl_Demo;
 
 Object.assign(defs,
-    {Jetpacker}
+    {Jetpacker},
+    {Obj_File_Demo}
 );
 
 // ******************** End extra step
