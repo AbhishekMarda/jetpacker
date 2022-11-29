@@ -13,7 +13,7 @@ function getBilinearInterpolated2DPoint(start, end, factor){
 
 
 
-function circleIntersect(center1, radius1, center2, radius2) {
+export function circleIntersect(center1, radius1, center2, radius2) {
     // find distance between the centers
     let distance = Math.sqrt( Math.pow(center1[0] - center2[0], 2) + Math.pow(center1[1] - center2[1], 2));
 

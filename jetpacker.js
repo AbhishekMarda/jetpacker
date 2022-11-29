@@ -1,7 +1,7 @@
 import {defs, tiny} from './examples/common.js';
 import {Shape_From_File} from './examples/obj-file-demo.js';
 // import {detectLaserCollision} from "./collision";
-import {detectLaserCollision} from "./collision.js";
+import {detectLaserCollision, circleIntersect} from "./collision.js";
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture,
 } = tiny;
@@ -74,11 +74,14 @@ class Coin {
 
     }
 
-    draw(context, program_state, t) {
+    draw(context, program_state, t, time_between_frames) {
 
 
-        // first flatten along x
-        let model_transform = Mat4.scale(1, 1, 0.1);
+        // first flatten along z
+        let model_transform = Mat4.scale(1, 1, 0.2);
+
+        // scale radius
+        model_transform = Mat4.scale(2, 2, 1).times(model_transform);
 
         // rotate to give spinning effect
         model_transform = Mat4.rotation(t, 0, 1, 0).times(model_transform);
@@ -87,7 +90,18 @@ class Coin {
         model_transform = Mat4.translation(this.transx, this.transy, 0).times(model_transform);
 
         Coin.shapes.coin.draw(context, program_state, model_transform, Coin.materials.coin_material);
+        const speed_multiplier = 6; // increase the speed of the objects
+        this.transx -= speed_multiplier * time_between_frames;
     }
+
+    getXPos() {
+        return this.transx;
+    }
+
+    getYPos() {
+        return this.transy;
+    }
+
 }
 
 export class Jetpacker extends Scene {
@@ -166,22 +180,26 @@ export class Jetpacker extends Scene {
         this.scene_max_y_coord = 38;
         this.scene_min_y_coord = -10;
 
+
         // game mechanics
         this.game_over = false;
         this.time_between_frames = 0.04;
         this.time_since_laser_drawn = 0;
         this.max_time_between_laser = this.time_between_frames * 20000; // there must be a laser in these amount of frames
+        this.player_radius = 3;
+        this.time_since_coin_draw = 0;
+        this.max_time_between_coin = this.time_between_frames * 2000;
+
         this.laser_arr = []; // queue of laser objects
+        this.coin_arr = [];
+
         this.game_paused = false;
         this.hard_mode = false;
         this.collision_detected = false;
         this.change_player_texture = false;
 
-        // delete
-        this.control_laser = new Laser(0, 0, 0, 1, 10, 1, 0);
-        // this.laser_arr.push(this.control_laser);
-        this.scene_max_z_coord = 40;
-        this.scene_min_z_coord = -10;
+
+        this.points = 0;
 
         this.keys_html = document.getElementById('keys');
         this.game_status_html = document.getElementById('game-status');
@@ -252,7 +270,7 @@ export class Jetpacker extends Scene {
             const player_z = 0;
             const player_x = 0;
 
-            let collision = detectLaserCollision(vec3(player_x, this.player_y_coord, player_z), 3, vec3(laser.transx, laser.transy, laser.transz), laser.rottheta, laser.scaley);
+            let collision = detectLaserCollision(vec3(player_x, this.player_y_coord, player_z), this.player_radius, vec3(laser.transx, laser.transy, laser.transz), laser.rottheta, laser.scaley);
             if (collision) {
                 return true;
             }
@@ -285,6 +303,20 @@ export class Jetpacker extends Scene {
 
     }
 
+    generateCoins() {
+        let draw_new_coin = (this.time_since_coin_draw / this.max_time_between_coin) > Math.random();
+        const coin_start_x = 150;
+        if (draw_new_coin) {
+            this.time_since_coin_draw = 0;
+            const entity_y = Math.random() * (this.scene_max_y_coord - this.scene_min_y_coord) + this.scene_min_y_coord;
+            let coin = new Coin(coin_start_x, entity_y);
+
+            this.coin_arr.push(coin);
+        } else {
+            this.time_since_coin_draw += this.time_between_frames;
+        }
+    }
+
     updateLasers() {
         while (this.laser_arr.length > 0) {
             if (this.laser_arr[0].getXPos() <= -40) {       // let the laser go a little off-screen
@@ -295,10 +327,48 @@ export class Jetpacker extends Scene {
         }
     }
 
+    updateCoins() {
+        while (this.coin_arr.length > 0) {
+            if (this.coin_arr[0].getXPos() <= -40) {
+                this.coin_arr.splice(0, 1);
+            } else {
+                break;
+            }
+        }
+    }
+
     drawLasers(context, program_state, t) {
         for(let laser of this.laser_arr) {
             laser.draw(context, program_state, t);
         }
+    }
+
+    drawCoins(context, program_state, t, time_between_frames) {
+        for(let coin of this.coin_arr) {
+            coin.draw(context, program_state, t, time_between_frames);
+        }
+    }
+
+    detectCoinCollision() {
+        let num_coins = 0;
+        for (let i = 0; i < this.coin_arr.length; i++){
+            const coin = this.coin_arr[i];
+            if (circleIntersect(
+                vec3(0, this.player_y_coord, 0),
+                this.player_radius,
+                vec3(coin.getXPos(), coin.getYPos(), 0),
+                2
+                )){
+                // there is an intersect
+                num_coins++;
+                this.coin_arr.splice(i, 1);
+                i--;
+            }
+        }
+    }
+
+    updatePoints(num_coins){
+        this.points += this.time_between_frames + 100 * num_coins;
     }
 
     reset() {
@@ -370,15 +440,20 @@ export class Jetpacker extends Scene {
             this.shapes.ground.draw(context, program_state, model_transform, this.materials.paused_ground_material);
         }
 
-        let coin = new Coin(5, 5);
-        coin.draw(context, program_state, t);
-        if (!this.collisionDetected(context, program_state) && !this.game_paused) {
+        if (!this.collisionDetected(context, program_state) && !this.game_paused && !this.game_over) {
             this.generateLaser(); // see if a laser must be added
+            this.generateCoins();
             this.updatePlayerPosition();
             this.updateLasers();
+            this.updateCoins();
+            let coins_collected = this.detectCoinCollision();
+            this.updatePoints(coins_collected);
+
             this.drawLasers(context, program_state, this.time_between_frames);
+            this.drawCoins(context, program_state, t, this.time_between_frames);
         } else if (this.collisionDetected(context, program_state) && !this.collision_detected) {
             this.drawLasers(context, program_state, 0);
+            this.drawCoins(context, program_state, t, 0)
             this.game_paused = true;
             this.collision_detected = true;
             this.game_over = true;
@@ -386,6 +461,7 @@ export class Jetpacker extends Scene {
             
         } else {
             this.drawLasers(context, program_state, 0);
+            this.drawCoins(context, program_state, t, 0);
         }
     }
 }
