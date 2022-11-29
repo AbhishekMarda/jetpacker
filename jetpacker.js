@@ -365,6 +365,7 @@ export class Jetpacker extends Scene {
                 i--;
             }
         }
+        return num_coins;
     }
 
     updatePoints(num_coins){
