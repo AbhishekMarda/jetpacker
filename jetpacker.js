@@ -1,6 +1,5 @@
 import {defs, tiny} from './examples/common.js';
 import {Shape_From_File} from './examples/obj-file-demo.js';
-// import {detectLaserCollision} from "./collision";
 import {detectLaserCollision, circleIntersect} from "./collision.js";
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture,
@@ -218,6 +217,7 @@ export class Jetpacker extends Scene {
         this.change_player_texture = false;
 
         this.points = 0;
+        this.num_coins_collected = 0;
 
         this.first_laser_drawn = false;
 
@@ -414,7 +414,7 @@ export class Jetpacker extends Scene {
     }
 
     updatePoints(num_coins){
-        this.points += this.time_between_frames + 100 * num_coins;
+        this.points += num_coins;
     }
 
     reset() {
