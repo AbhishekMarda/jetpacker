@@ -193,8 +193,8 @@ export class Jetpacker extends Scene {
         this.player_z_coord = 0.0;
         this.w_pressed = false;
         this.player_velocity = 0.0;
-        this.jetpack_acceleration = 20.0;
-        this.gravity_acceleration = -9.8;
+        this.jetpack_acceleration = 32.0;
+        this.gravity_acceleration = -18.6;
         this.scene_max_y_coord = 38;
         this.scene_min_y_coord = -10;
 
