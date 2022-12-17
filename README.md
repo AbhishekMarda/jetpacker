@@ -6,4 +6,4 @@ Collect coins to increase your points.
 
 ## How to run
 
-Either run `server.py` or open index.js in your browser. 
+Either run `server.py` or open index.html in your browser. 
